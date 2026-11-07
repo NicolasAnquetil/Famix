@@ -94,7 +94,7 @@ FamixTAnnotationInstanceAttribute >> parentAnnotationInstance: anObject [
 { #category : 'accessing' }
 FamixTAnnotationInstanceAttribute >> value [
 
-	<FMProperty: #value type: #Object>
+	<FMProperty: #value type: #String>
 	<ignoreForCoverage>
 	<generated>
 	<FMComment: 'Actual value of the attribute used in an annotation'>
