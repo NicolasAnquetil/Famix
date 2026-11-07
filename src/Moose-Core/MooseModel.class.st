@@ -239,6 +239,23 @@ MooseModel class >> importFromMSEStream: aStream filteredBy: anImportingContext 
 		  yourself
 ]
 
+{ #category : 'import-export' }
+MooseModel class >> importFromSplitJSON: aStream withMetamodel: aMetamodel [
+	"I import a model written in the split JSON format with its metamodel and return a FMModel from it."
+
+	| model areWarningsEnabled |
+	model := FMModel withMetamodel: aMetamodel.
+	areWarningsEnabled := Deprecation raiseWarning.
+	[
+		Deprecation raiseWarning: false.
+		(FMSplitImporter model: model)
+			parser: FMSplitJSONParser;
+			stream: aStream;
+			run ] ensure: [ Deprecation raiseWarning: areWarningsEnabled ].
+	model updateCache.
+	^ model
+]
+
 { #category : 'meta' }
 MooseModel class >> metamodel [
 
@@ -467,6 +484,16 @@ MooseModel >> exportToMSEStream: aStream [
 ]
 
 { #category : 'import-export' }
+MooseModel >> exportToSplitJSONStream: aStream [
+	"Export the model in the split JSON format: an 'entities' section with primitive properties, then a 'references' section with the references between entities."
+
+	self detectEncodingOfAllFileAnchors.
+	(FMModel withMetamodel: self metamodel)
+		addAll: self entities;
+		exportWithPrinter: (FMSplitJSONPrinter on: aStream) usingExporter: FMSplitModelExporter
+]
+
+{ #category : 'import-export' }
 MooseModel >> exportWithMetamodelUsingPrinter: aPrinter [
 
 	(FMModel withMetamodel: self metamodel)
@@ -579,6 +606,15 @@ MooseModel >> importFromMSEStream: aStream filteredBy: anImportingContext [
 				   withMetamodel: self metamodel
 				   filteredBy: anImportingContext)
 		  named: (aStream localName withoutSuffix: '.mse')
+]
+
+{ #category : 'import-export' }
+MooseModel >> importFromSplitJSONStream: aStream [
+	"Import a model written in the split JSON format (see #exportToSplitJSONStream:)."
+
+	^ self
+		  importFrom: (self class importFromSplitJSON: aStream withMetamodel: self metamodel)
+		  named: (aStream localName withoutSuffix: '.json')
 ]
 
 { #category : 'testing' }
